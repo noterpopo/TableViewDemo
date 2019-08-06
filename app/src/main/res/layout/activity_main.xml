@@ -7,21 +7,11 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.noterpopo.tableviewdemo.MyTableLayout
+    <com.noterpopo.tableviewdemo.QuickGridLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp">
-
-        <TextView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:background="@color/colorAccent"
-            android:text="111"
-            app:layout_column_index="1"
-            app:layout_row_index="1"
-            app:layout_row_span="2"/>
-
         <TextView
             android:layout_width="100dp"
             android:layout_height="100dp"
@@ -29,6 +19,7 @@
             android:text="333"
             app:layout_column_index="1"
             app:layout_row_index="2" />
+
 
         <TextView
             android:layout_width="100dp"
@@ -45,6 +36,16 @@
             android:text="222"
             app:layout_column_index="2"
             app:layout_row_index="1" />
-    </com.noterpopo.tableviewdemo.MyTableLayout>
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@color/colorAccent"
+            android:text="111"
+            app:layout_column_index="1"
+            app:layout_row_index="1"
+            app:layout_column_span="2"/>
+
+    </com.noterpopo.tableviewdemo.QuickGridLayout>
 
 </LinearLayout>

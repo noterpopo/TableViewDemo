@@ -6,29 +6,26 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeMap;
 
+public class QuickGridLayout extends ViewGroup {
 
-public class MyTableLayout extends ViewGroup {
-
-    private TreeMap<Integer, Integer> rowMap = new TreeMap<>();
-    private TreeMap<Integer, Integer> columnMap = new TreeMap<>();
+    private SparseArray<Integer> rowMap = new SparseArray<>();
+    private SparseArray<Integer> columnMap = new SparseArray<>();
     private boolean needMeasure = true;
     private int skipRow = 0;
     private int skipColumn = 0;
     private int skipRowIndex = -1;
     private int skipColumnIndex = -1;
 
-    public MyTableLayout(Context context) {
+    public QuickGridLayout(Context context) {
         super(context);
     }
 
-    public MyTableLayout(Context context, AttributeSet attrs) {
+    public QuickGridLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWillNotDraw(false);
     }
@@ -52,7 +49,7 @@ public class MyTableLayout extends ViewGroup {
             int childRowIndex = childLayoutParam.getRowIndex();
             int childColumnIndex = childLayoutParam.getColumnIndex();
 
-            if (null != rowMap && rowMap.containsKey(childRowIndex)) {
+            if (null != rowMap && rowMap.indexOfKey(childRowIndex) >= 0) {
                 if (needMeasure && child.getMeasuredHeight() > rowMap.get(childRowIndex)) {
                     rowMap.put(childRowIndex, child.getMeasuredHeight());
                 }
@@ -62,7 +59,7 @@ public class MyTableLayout extends ViewGroup {
                 }
             }
 
-            if (null != columnMap && columnMap.containsKey(childColumnIndex)) {
+            if (null != columnMap && columnMap.indexOfKey(childColumnIndex) >= 0) {
                 if (needMeasure && child.getMeasuredWidth() > columnMap.get(childColumnIndex)) {
                     columnMap.put(childColumnIndex, child.getMeasuredWidth());
                 }
@@ -74,13 +71,6 @@ public class MyTableLayout extends ViewGroup {
 
         }
 
-
-        ArrayList<Integer> rowKeyArray = new ArrayList<>(rowMap.keySet());
-        ArrayList<Integer> rowValueArray = new ArrayList<>(rowMap.values());
-
-        ArrayList<Integer> columnKeyArray = new ArrayList<>(columnMap.keySet());
-        ArrayList<Integer> columnValueArray = new ArrayList<>(columnMap.values());
-
         for (int j = 0; j < childCount; ++j) {
             View view = getChildAt(j);
             LayoutParams p = (LayoutParams) view.getLayoutParams();
@@ -91,17 +81,17 @@ public class MyTableLayout extends ViewGroup {
 
             if (rowSpan > 1) {
                 skipColumnIndex = p.getColumnIndex();
-                int index = getIndexInArray(p.getRowIndex(), rowKeyArray);
-                while (needMeasure && rowSpan-- > 1 && ++index < rowKeyArray.size()) {
-                    p.height += rowValueArray.get(index);
+                int index = rowMap.indexOfKey(p.getRowIndex());
+                while (needMeasure && rowSpan-- > 1 && ++index < rowMap.size()) {
+                    p.height += rowMap.valueAt(index);
                 }
             }
 
             if (columnSpan > 1) {
                 skipRowIndex = p.getRowIndex();
-                int index = getIndexInArray(p.getColumnIndex(), columnKeyArray);
-                while (needMeasure && columnSpan-- > 1 && ++index < columnKeyArray.size()) {
-                    p.width += columnValueArray.get(index);
+                int index = columnMap.indexOfKey(p.getColumnIndex());
+                while (needMeasure && columnSpan-- > 1 && ++index < columnMap.size()) {
+                    p.width += columnMap.valueAt(index);
                 }
             }
 
@@ -121,12 +111,12 @@ public class MyTableLayout extends ViewGroup {
             view.setLayoutParams(p);
         }
 
-        for (int row : rowMap.values()) {
-            height += row;
+        for(int i=0 ;i<rowMap.size();++i){
+            height += rowMap.valueAt(i);
         }
 
-        for (int column : columnMap.values()) {
-            width += column;
+        for (int j=0 ;j<columnMap.size();++j) {
+            width += columnMap.valueAt(j);
         }
 
         if (needMeasure) {
@@ -134,17 +124,6 @@ public class MyTableLayout extends ViewGroup {
         }
         setMeasuredDimension(width, height);
 
-    }
-
-    private int getIndexInArray(int v, ArrayList<Integer> array) {
-        int res = -1;
-        for (int i = 0; i < array.size(); ++i) {
-            if (v == array.get(i)) {
-                res = i;
-                break;
-            }
-        }
-        return res;
     }
 
     @Override
@@ -164,16 +143,16 @@ public class MyTableLayout extends ViewGroup {
 
             int cl = 0, ct = 0, cr = 0, cb = 0;
 
-            for (int row : rowMap.keySet()) {
-                if (cParams.rowIndex > row) {
-                    ct += rowMap.get(row);
+            for (int j=0 ;j<rowMap.size();++j) {
+                if (cParams.rowIndex > rowMap.keyAt(j)) {
+                    ct += rowMap.valueAt(j);
                 }
             }
 
 
-            for (int column : columnMap.keySet()) {
-                if (cParams.columnIndex > column) {
-                    cl += columnMap.get(column);
+            for (int k=0 ;k<rowMap.size();++k) {
+                if (cParams.columnIndex > columnMap.keyAt(k)) {
+                    cl += columnMap.valueAt(k);
                 }
             }
 
@@ -189,8 +168,6 @@ public class MyTableLayout extends ViewGroup {
         Paint paint = new Paint();
         paint.setColor(Color.BLACK);
 
-        Map.Entry<Integer,Integer> firstRow = rowMap.firstEntry();
-        Map.Entry<Integer,Integer> firstColumn = columnMap.firstEntry();
 
         int cWidth = 0;
         int cHeight = 0;
@@ -207,14 +184,14 @@ public class MyTableLayout extends ViewGroup {
                 continue;
             }
 
-            if(firstRow!=null && firstRow.getKey()==cParams.getRowIndex()){
+            if( rowMap.keyAt(0)==cParams.getRowIndex()){
                 canvas.drawRect(childView.getLeft(), childView.getTop(), childView.getRight(), childView.getTop() + 2, paint);
                 canvas.drawRect(childView.getLeft(), childView.getBottom()-2, childView.getRight(), childView.getBottom() , paint);
             }else {
                 canvas.drawRect(childView.getLeft(), childView.getBottom()-2, childView.getRight(), childView.getBottom(), paint);
             }
 
-            if(firstColumn!=null && firstColumn.getKey()==cParams.getColumnIndex()){
+            if(columnMap.keyAt(0)==cParams.getColumnIndex()){
                 canvas.drawRect(childView.getLeft(), childView.getTop(), childView.getLeft()+2, childView.getBottom(), paint);
                 canvas.drawRect(childView.getRight()-2, childView.getTop(), childView.getRight(), childView.getBottom() , paint);
             }else {
@@ -234,11 +211,11 @@ public class MyTableLayout extends ViewGroup {
 
         public LayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
-            TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.MyTableLayout);
-            rowIndex = a.getInt(R.styleable.MyTableLayout_layout_row_index, 0);
-            columnIndex = a.getInt(R.styleable.MyTableLayout_layout_column_index, 0);
-            rowSpan = a.getInt(R.styleable.MyTableLayout_layout_row_span, 1);
-            columnSpan = a.getInt(R.styleable.MyTableLayout_layout_column_span, 1);
+            TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.QuickGridLayout);
+            rowIndex = a.getInt(R.styleable.QuickGridLayout_layout_row_index, 0);
+            columnIndex = a.getInt(R.styleable.QuickGridLayout_layout_column_index, 0);
+            rowSpan = a.getInt(R.styleable.QuickGridLayout_layout_row_span, 1);
+            columnSpan = a.getInt(R.styleable.QuickGridLayout_layout_column_span, 1);
             a.recycle();
         }
 

@@ -8,7 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <declare-styleable name="MyTableLayout">
+    <declare-styleable name="QuickGridLayout">
         <attr name="layout_row_index" format="integer"/>
         <attr name="layout_column_index" format="integer"/>
         <attr name="layout_row_span" format="integer" />
